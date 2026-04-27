@@ -1,0 +1,840 @@
+[
+  {
+    "cycle_id": "e165-c01",
+    "task_ref": "experiment-165-ooda-bootstrap",
+    "origin_task": 113,
+    "started_at": "2026-04-21T00:00:00Z",
+    "ended_at": "2026-04-21T00:05:00Z",
+    "scheduler": {
+      "job_id": 1,
+      "verdict": "DONE(0)"
+    },
+    "observe": {
+      "input": "experiment-164 のクローン再走 (corpora/english_pride_prejudice.txt)",
+      "output_path": "artifacts/bitrag/experiment-165-ooda-bootstrap/results/result.txt",
+      "rustc_verdict": "n/a",
+      "anomaly": false
+    },
+    "orient": {
+      "axiom_alignment": {
+        "A6": "PASS",
+        "A7": "FAIL",
+        "A8": "PASS"
+      },
+      "regression": false,
+      "comment": "Task#113 と一致。再現性確認。"
+    },
+    "decide": {
+      "factors": [
+        "corpus_domain",
+        "NSEG",
+        "d"
+      ],
+      "levels": [
+        [
+          "rust",
+          "law",
+          "mixture",
+          "english_lit"
+        ],
+        [
+          4,
+          8,
+          16
+        ],
+        [
+          256,
+          512,
+          1024
+        ]
+      ],
+      "array": "L4_orthogonal",
+      "futures": [
+        "F1: bootstrap 再走のみ",
+        "F2: NSEG=16 で A7 を再評価",
+        "F3: 第5コーパス追加"
+      ],
+      "selected": "F1"
+    },
+    "act": {
+      "command": "qsub \"cd .../experiment-165-ooda-bootstrap && bash run.sh\"",
+      "artifacts": [
+        "results/result.txt"
+      ],
+      "next_observe": "F2/F3 を回した時の A7 verdict 変化"
+    },
+    "next_cycle_id": "e166-c01"
+  },
+  {
+    "cycle_id": "e166-c01",
+    "task_ref": "experiment-166-nibble4-tokenizer",
+    "origin_task": 121,
+    "started_at": "2026-04-21T00:30:00Z",
+    "ended_at": "2026-04-21T00:35:00Z",
+    "scheduler": {
+      "job_id": 1,
+      "verdict": "DONE(0)"
+    },
+    "observe": {
+      "input": "bitrag_core::nibble4_tokenizer の encode/decode を 3 コーパス源 58 ファイルに適用",
+      "output_path": "artifacts/bitrag/experiment-166-nibble4-tokenizer/results/result.txt",
+      "rustc_verdict": "n/a",
+      "roundtrip_ok": "58/58",
+      "roundtrip_rate_pct": 100,
+      "anomaly": false
+    },
+    "orient": {
+      "axiom_alignment": {
+        "A0": "supported_by_constructive_example"
+      },
+      "regression": false,
+      "comment": "可逆性 100%。bytes→nibble→[u64;16] の構成は論理演算のみで完結し、A0 の最小実例として #114 本文 L2/L6 章で引用可。"
+    },
+    "decide": {
+      "factors": [
+        "corpus_source"
+      ],
+      "levels": [
+        [
+          "corpora",
+          "github_corpus",
+          "rust_ui_dataset"
+        ]
+      ],
+      "array": "full_3",
+      "futures": [
+        "F1: 規定3コーパスで全数検証",
+        "F2: ニブル頻度分布採取",
+        "F3: ストリーム圧縮率計測"
+      ],
+      "selected": "F1"
+    },
+    "act": {
+      "command": "qsub \"cd .../experiment-166-nibble4-tokenizer && bash run.sh\"",
+      "artifacts": [
+        "results/result.txt"
+      ],
+      "next_observe": "より大規模コーパス (Task #122 候補) での一致率維持"
+    },
+    "next_cycle_id": "e167-c01"
+  },
+  {
+    "cycle_id": "e167-c01",
+    "task_ref": "experiment-167-sign2-tokenizer",
+    "origin_task": 114,
+    "started_at": "2026-04-21T01:00:00Z",
+    "ended_at": "2026-04-21T01:05:00Z",
+    "scheduler": {
+      "job_id": 2,
+      "verdict": "DONE(0)"
+    },
+    "observe": {
+      "input": "text → nibble4 tokens → bytes → Sign2Block → bytes → tokens → text の 5 段直列同型を 3 コーパス源 58 ファイルに適用",
+      "output_path": "artifacts/bitrag/experiment-167-sign2-tokenizer/results/result.txt",
+      "roundtrip_ok": "58/58",
+      "roundtrip_rate_pct": 100,
+      "total_blocks": 6044,
+      "total_sign2_values": 3094528,
+      "sign2_distribution_pct": {
+        "plus": 32.84,
+        "zero": 25.69,
+        "minus": 25.73,
+        "spare": 15.72
+      },
+      "nonzero_plus_ratio_pct": 56,
+      "anomaly": false
+    },
+    "orient": {
+      "axiom_alignment": {
+        "A0": "supported",
+        "T1": "first_chained_instance",
+        "L2": "supported_by_runtime",
+        "L6": "supported_by_runtime"
+      },
+      "regression": false,
+      "comment": "T1 (構成定理) の最初の直列実例。L2 (sign2) と L6 (nibble4) を iso で連結し可逆性 100%。Spare(11) 出現率 15.7% から付帯チャネル容量 ≒ 160bit/block を確認。+1 偏り +6pt は UTF-8 バイトのビット出現偏りに由来する仮説。"
+    },
+    "decide": {
+      "factors": [
+        "corpus_source"
+      ],
+      "levels": [
+        [
+          "corpora",
+          "github_corpus",
+          "rust_ui_dataset"
+        ]
+      ],
+      "array": "full_3",
+      "futures": [
+        "F1: 規定3コーパス round-trip + 分布採取",
+        "F2: nibble 統計の直接採取",
+        "F3: Spare チャネル付帯メタ試験"
+      ],
+      "selected": "F1"
+    },
+    "act": {
+      "command": "qsub \"cd .../experiment-167-sign2-tokenizer && bash run.sh\"",
+      "artifacts": [
+        "results/result.txt"
+      ],
+      "next_observe": "+1 偏り 56% の起源切り分け (UTF-8 vs ニブル4 タグ vs Spare 同化)"
+    },
+    "next_cycle_id": "e168-c01"
+  },
+  {
+    "cycle_id": "e168-c01",
+    "task_ref": "experiment-168-sign2-position-histogram",
+    "origin_task": 114,
+    "started_at": "2026-04-21T01:30:00Z",
+    "ended_at": "2026-04-21T01:35:00Z",
+    "scheduler": {
+      "job_id": 3,
+      "verdict": "DONE(0)"
+    },
+    "observe": {
+      "input": "F-α: 1024bit ブロック内 512 位置ごとに Sign2 値の出現分布を採取",
+      "output_path": "artifacts/bitrag/experiment-168-sign2-position-histogram/results/result.txt",
+      "key_findings": [
+        "byte 127 (pos 508..511) = nibble4 終端タグ位置が統計だけで自動発見 (>83% Spare/Plus パターン固定)",
+        "ASCII 高位 bit 領域 (pos 2,3,6,7,...) は Minus 70% / Plus 76% など極端な位置依存",
+        "rust_ui_dataset は byte 127 偏りが緩い (80%) — 短いファイル多数で終端多様"
+      ]
+    },
+    "orient": {
+      "axiom_alignment": {
+        "L6_iso": "validated",
+        "T1_chain": "supported"
+      },
+      "regression": false,
+      "comment": "測定器が機能している証拠。位置情報を捨てない統計だけで bitRAG 内部構造 (タグ・ASCII不変) を再発見。"
+    },
+    "decide": {
+      "factors": [
+        "position_index",
+        "corpus"
+      ],
+      "levels": [
+        [
+          "0..511"
+        ],
+        [
+          "corpora",
+          "github",
+          "rust_ui"
+        ]
+      ],
+      "futures": [
+        "F-α 単独",
+        "全パターン並列"
+      ],
+      "selected": "全パターン並列 (e168-e171)"
+    },
+    "act": {
+      "command": "qsub bash run.sh (JOB 3)",
+      "next_observe": "位置別エントロピーで真の冗長度測定"
+    },
+    "next_cycle_id": "e169-c01"
+  },
+  {
+    "cycle_id": "e169-c01",
+    "task_ref": "experiment-169-sign2-digram",
+    "origin_task": 114,
+    "started_at": "2026-04-21T01:30:00Z",
+    "ended_at": "2026-04-21T01:35:00Z",
+    "scheduler": {
+      "job_id": 4,
+      "verdict": "DONE(0)"
+    },
+    "observe": {
+      "input": "F-β: 隣接ペア (X_i, X_{i+1}) の同時分布 4x4 + 整数固定小数エントロピー",
+      "output_path": "artifacts/bitrag/experiment-169-sign2-digram/results/result.txt",
+      "metrics_mbit": {
+        "corpora": {
+          "H_X": 1995,
+          "H_XY": 3879,
+          "H_cond": 1882,
+          "I_XY": 112,
+          "compressibility_pct": 5.6
+        },
+        "github": {
+          "H_X": 2024,
+          "H_XY": 3966,
+          "H_cond": 1942,
+          "I_XY": 81,
+          "compressibility_pct": 4
+        },
+        "rust_ui": {
+          "H_X": 1986,
+          "H_XY": 3860,
+          "H_cond": 1873,
+          "I_XY": 111,
+          "compressibility_pct": 5.6
+        }
+      },
+      "key_findings": [
+        "H(X) ≈ 1.99 bit/値 (ほぼ理論最大 2.0)",
+        "I(X;Y) = 0.08-0.11 bit/値 ⇒ 隣接ペアだけで 4-6% 圧縮可能",
+        "Rust UI で (Zero, Zero) が 18.95% と突出 (空白連続パターン)"
+      ]
+    },
+    "orient": {
+      "axiom_alignment": {
+        "A0": "supported (整数固定小数のみ)",
+        "info_extraction": "first_quantification"
+      },
+      "regression": false,
+      "comment": "意味的圧縮の最初の定量。1024bit ブロックあたり 40-56 bit が隣接ペアだけで予測可能 = 6044 ブロックで合計 240-340 Kbit の冗長。"
+    },
+    "decide": {
+      "factors": [
+        "pair_offset",
+        "corpus"
+      ],
+      "levels": [
+        [
+          "1"
+        ],
+        [
+          "corpora",
+          "github",
+          "rust_ui"
+        ]
+      ],
+      "futures": [
+        "F-β: offset=1 (今回)",
+        "F-β': offset=k 一般化",
+        "F-β'': トリグラム"
+      ],
+      "selected": "F-β"
+    },
+    "act": {
+      "command": "qsub bash run.sh (JOB 4)",
+      "next_observe": "trigram / k-shift で長距離相関検出"
+    },
+    "next_cycle_id": "e170-c01"
+  },
+  {
+    "cycle_id": "e170-c01",
+    "task_ref": "experiment-170-sign2-block-xor",
+    "origin_task": 114,
+    "started_at": "2026-04-21T01:30:00Z",
+    "ended_at": "2026-04-21T01:35:00Z",
+    "scheduler": {
+      "job_id": 5,
+      "verdict": "DONE(0)"
+    },
+    "observe": {
+      "input": "F-γ: 連続ブロック対の bytes XOR popcount 分布",
+      "output_path": "artifacts/bitrag/experiment-170-sign2-block-xor/results/result.txt",
+      "popcount_mean": {
+        "corpora": 349,
+        "github": 381,
+        "rust_ui": 391
+      },
+      "popcount_min": {
+        "corpora": 147,
+        "github": 321,
+        "rust_ui": 177
+      },
+      "zero_blocks": 0,
+      "key_findings": [
+        "完全反復ブロック (popcount=0) はゼロ件 — 1024bit 粒度では文字単位反復が直接ブロック整列しない",
+        "popcount 平均 349-391 << 一様ランダム期待 512 ⇒ ブロック間に強い相関",
+        "corpora は最低 popcount=147 (約 14% bit のみ違う) — 高い反復構造を持つ部位を含む"
+      ]
+    },
+    "orient": {
+      "axiom_alignment": {
+        "L6": "supported",
+        "repetition_signal": "weakly_present_at_block_granularity"
+      },
+      "regression": false,
+      "comment": "ブロック粒度 (1024bit) は反復検出には粗すぎ。次は sub-block (例: 256bit ローリング窓) または min-hash 系で再検出。"
+    },
+    "decide": {
+      "factors": [
+        "granularity"
+      ],
+      "levels": [
+        [
+          "1024bit_block"
+        ]
+      ],
+      "futures": [
+        "sub-block ローリング",
+        "min-hash",
+        "shift-1 XOR"
+      ],
+      "selected": "1024bit (今回)"
+    },
+    "act": {
+      "command": "qsub bash run.sh (JOB 5)",
+      "next_observe": "256bit 窓で反復率の真値"
+    },
+    "next_cycle_id": "e171-c01"
+  },
+  {
+    "cycle_id": "e171-c01",
+    "task_ref": "experiment-171-sign2-spare-channel",
+    "origin_task": 114,
+    "started_at": "2026-04-21T01:30:00Z",
+    "ended_at": "2026-04-21T01:35:00Z",
+    "scheduler": {
+      "job_id": 6,
+      "verdict": "DONE(0)"
+    },
+    "observe": {
+      "input": "F-δ: Spare(11) を 1 とする 512bit マスクを抽出し run-length と pack byte popcount を採取",
+      "output_path": "artifacts/bitrag/experiment-171-sign2-spare-channel/results/result.txt",
+      "spare_rate_pct": {
+        "corpora": 15.57,
+        "github": 19.14,
+        "rust_ui": 15.51
+      },
+      "run_length_pct": {
+        "corpora": {
+          "1": 87.92,
+          "2": 10.55,
+          "3": 1.51
+        },
+        "github": {
+          "1": 82.81,
+          "2": 15.8,
+          "3": 1.36
+        },
+        "rust_ui": {
+          "1": 79.31,
+          "2": 19.44,
+          "3": 1.23
+        }
+      },
+      "key_findings": [
+        "Spare は単発出現が 80-88%、最大連続 4 まで — UTF-8 多バイト先頭は最大 4 byte = 4 連続を確認",
+        "全無ブロック / 全埋ブロックともゼロ — Spare はブロック内に必ず散る構造",
+        "コーパス別 Spare 率: github が 19.1% で最高 (混成テキスト ⇒ バイナリ寄り混入の指紋)"
+      ]
+    },
+    "orient": {
+      "axiom_alignment": {
+        "L2_supplement": "validated_in_real_corpus",
+        "spare_as_boundary_marker": "supported"
+      },
+      "regression": false,
+      "comment": "Spare チャネルが UTF-8 境界 / バイナリ侵入の自然マーカーとして機能する仮説を 3 コーパスで支持。"
+    },
+    "decide": {
+      "factors": [
+        "corpus"
+      ],
+      "levels": [
+        [
+          "corpora",
+          "github",
+          "rust_ui"
+        ]
+      ],
+      "futures": [
+        "Spare マスクの再帰圧縮",
+        "Spare 配置と UTF-8 境界の照合",
+        "Spare チャネルへの付帯メタ書き込み試験"
+      ],
+      "selected": "F-δ 基本"
+    },
+    "act": {
+      "command": "qsub bash run.sh (JOB 6)",
+      "next_observe": "Spare 位置と UTF-8 境界の一致率"
+    },
+    "next_cycle_id": "e172-c01"
+  },
+  {
+    "cycle_id": "e172-c01",
+    "experiment": "experiment-172-spare-utf8-alignment",
+    "job_id": 7,
+    "observe": {
+      "purpose": "byte ラベル (ASCII / lead2/3/4 / cont) ごとに 4 slot の Sign2 分布を集計し、slot3=Spare による UTF-8 lead 検出の precision/recall を実測",
+      "label_distribution_pct": {
+        "corpora": {
+          "ASCII": 98.13,
+          "lead2": 0,
+          "lead3": 0.62,
+          "lead4": 0,
+          "cont": 1.24
+        },
+        "github": {
+          "ASCII": 99.89,
+          "lead2": 0,
+          "lead3": 0,
+          "lead4": 0.02,
+          "cont": 0.07
+        },
+        "rust_ui": {
+          "ASCII": 99.98,
+          "lead2": 0,
+          "lead3": 0,
+          "lead4": 0,
+          "cont": 0
+        }
+      },
+      "lead_detection": {
+        "corpora": {
+          "TP": 4362,
+          "FP": 0,
+          "FN": 0,
+          "TN": 695638,
+          "precision": 1,
+          "recall": 1
+        },
+        "github": {
+          "TP": 9,
+          "FP": 0,
+          "FN": 0,
+          "TN": 31762,
+          "precision": 1,
+          "recall": 1
+        },
+        "rust_ui": {
+          "TP": 2,
+          "FP": 0,
+          "FN": 0,
+          "TN": 32212,
+          "precision": 1,
+          "recall": 1
+        }
+      },
+      "key_findings": [
+        "slot 3 = Spare は 3 コーパス全件で precision=recall=1.000 で UTF-8 lead を完全分離",
+        "ASCII byte の slot 3 は {Plus, Zero} のみ (上位 bit=0 を直写)、cont byte の slot 3 は Minus のみ — 4 ラベルが slot3 だけで線形分離",
+        "lead2/3/4 の slot 0..2 はラベル種に応じて Plus/Zero の決定的パターン (例: lead3 → 0:Minus 1:Zero 2:Minus 3:Spare で完全固定)"
+      ]
+    },
+    "orient": {
+      "axiom_alignment": {
+        "spare_as_boundary_marker": "proved",
+        "L2_supplement": "applies_byte_wise"
+      },
+      "regression": false,
+      "comment": "Spare = UTF-8 多バイト lead という構造的同型を 3 コーパスで完全証明。これにより Sign2 表現は『2bit/シンボル』に加えて『先頭バイト位置のメタ情報』を無償で内包することが確定。E173 のサイドチャネル設計はこの不変条件を前提にして良い。"
+    },
+    "decide": {
+      "factors": [
+        "lead_byte_density"
+      ],
+      "levels": [
+        [
+          "corpora_high_lead",
+          "code_low_lead"
+        ]
+      ],
+      "futures": [
+        "lead-aware bit packing (slot3 を 1bit に圧縮)",
+        "cont byte の slot1 Spare(41%) の二次解析"
+      ],
+      "selected": "F-δ' 基本"
+    },
+    "act": {
+      "command": "qsub bash run.sh (JOB 7)",
+      "next_observe": "実コーデックの圧縮率と理論上限の差分"
+    },
+    "next_cycle_id": "e173-c01"
+  },
+  {
+    "cycle_id": "e173-c01",
+    "experiment": "experiment-173-block1024-codec",
+    "job_id": 11,
+    "observe": {
+      "purpose": "1024bit ブロックを 3 段 (Stage A 位置マスク剥離 / Stage B digram 残差 RLE / Stage C Spare サイドチャネル) で可逆符号化し、ブロック単位でモード自動選択 (M0 raw / M1 7bit packed / M2 RLE) を行う",
+      "self_tests": "5/5 PASS (空 / 'a'x127→M2/40bit / UTF-8混在 / 0xFF dense / 多様 ASCII→M1)",
+      "round_trip": {
+        "corpora": "5513/5513",
+        "github": "251/251",
+        "rust_ui": "280/280",
+        "total": "6044/6044"
+      },
+      "compression_pct": {
+        "corpora": 7.4,
+        "github": 12.2,
+        "rust_ui": 20.7,
+        "total": 8.2
+      },
+      "mode_selection_pct": {
+        "corpora": {
+          "M0": 39.52,
+          "M1": 60.13,
+          "M2": 0.34
+        },
+        "github": {
+          "M0": 1.99,
+          "M1": 98,
+          "M2": 0
+        },
+        "rust_ui": {
+          "M0": 0.71,
+          "M1": 92.14,
+          "M2": 7.14
+        },
+        "total": {
+          "M0": 36,
+          "M1": 63,
+          "M2": 0
+        }
+      },
+      "stage_c_spare_runlength_pct": {
+        "corpora": {
+          "1": 87.92,
+          "2": 10.55,
+          "3": 1.51
+        },
+        "github": {
+          "1": 82.81,
+          "2": 15.8,
+          "3": 1.36,
+          "4": 0
+        },
+        "rust_ui": {
+          "1": 79.31,
+          "2": 19.44,
+          "3": 1.23
+        }
+      },
+      "key_findings": [
+        "全 6044 ブロック round-trip 100% 成功 — 整数 / bit 演算のみで完全可逆",
+        "合算 8.2% 圧縮で E169 digram 相互情報量上限 5.6% を +2.6 pt 超過",
+        "Rust UI で 20.7% (前版 +0.3 pt) — M2 RLE が 7.14% のブロックで採択され、インデント反復を吸収",
+        "corpora の M0 採択率 39% は UTF-8 lead/cont 混在ブロックが多いことを示す (E172 の 1.86% lead/cont 比率と整合)",
+        "Stage C: Spare run-length は E171 と一致、サイドチャネル冗長性 (圧縮余地ゼロ) を再確認 — E172 の precision=1.000 と整合"
+      ]
+    },
+    "orient": {
+      "axiom_alignment": {
+        "ascii_invariant": "exploitable",
+        "digram_residual_via_rle": "marginal_gain",
+        "huffman_free_compression": "established"
+      },
+      "regression": false,
+      "comment": "3 段アーキテクチャ完成: Stage A (位置マスク剥離) で +7-12%、Stage B (RLE 残差) で Rust UI に +0.3 pt 追加、Stage C (Spare サイドチャネル) は冗長性確認のみ。M2 採択 0.34-7.14% から、RLE は典型データではモード選択時の保険として機能する。次は M2 の prefix を 1bit ではなく 2bit (no-RLE 候補) にして literal オーバヘッドゼロ化、または digram-pair 辞書 (上位 4 ペア) の検討。"
+    },
+    "decide": {
+      "factors": [
+        "stage"
+      ],
+      "levels": [
+        [
+          "A_position_mask",
+          "B_digram_rle",
+          "C_spare_sidechannel"
+        ]
+      ],
+      "futures": [
+        "M2 prefix の switching gating (リテラル時オーバヘッドゼロ)",
+        "ブロック間 ASCII 連続 run-length",
+        "Spare サイドチャネルへの付帯メタ書込実験"
+      ],
+      "selected": "3 段完成、E174 で M2 改良"
+    },
+    "act": {
+      "command": "qsub bash run.sh (JOB 11)",
+      "next_observe": "M2 改良で M2 採択率と総圧縮率が伸びるか"
+    },
+    "next_cycle_id": "e174-c01"
+  },
+  {
+    "cycle_id": "e174-c01",
+    "task_ref": "experiment-174-pseudoinverse",
+    "origin_task": 125,
+    "datetime_jst": "2026-04-23T16:15+09:00",
+    "axiom_alignment": {
+      "no_f32_f64": "verified (grep src = comments only)",
+      "scheduler_use": "qsub JOB 9 DONE(0)"
+    },
+    "observe": {
+      "config": "N_GRAM=4, V=65536 bit, NDOC=16, 整数のみ (u64/i64/i128)",
+      "self_tests": "T1 (F2 単位行列反転), T2 (上三角 i64 det=2^16), T2b (adj·A=det·I), T3 (random F2 全 Penrose=0), T4 (random ℤ adj·A=det·I) すべて ✓",
+      "F2_AAt_invertibility": {
+        "law": "特異 (NDOC=16 で popcount~25% saturation のため列線形従属)",
+        "rust": "非特異 (popcount~5% 低充填)",
+        "mixture": "特異"
+      },
+      "rust_F2_penrose": "(1)(2)(3)(4) すべて 0 bit/不一致 → 完全 Moore-Penrose を GF(2) 上で達成",
+      "Z_path": "AAᵀ entries 最大 ~16735 → det が i128 範囲外 (Hadamard 上限 ~10^57); overflow 検知あり、明示的に bigint 必要と報告"
+    },
+    "orient": {
+      "key_finding": "GF(2) 上で AAᵀ が非特異な (rust) コーパスでは Penrose 4 条件すべてが成立し、bitRAG の順方向行列に対する 完全 Moore-Penrose 疑似逆 が GF(2) で構成可能であることを実証。法律/混合では NDOC=16 segment 化が高 saturation を生み AAᵀ 特異化",
+      "axiom_alignment": {
+        "MP_pseudoinverse_in_F2": "constructive_when_AAt_invertible",
+        "saturation_penalty": "rank_deficiency_at_high_density"
+      },
+      "regression": false,
+      "comment": "smaller NDOC (e.g. 8) では E163b で全 3 コーパス rank=NSEG=8 を確認済 → NDOC=8 設定では F2 完全 Penrose が 3 コーパス全件で成立する見込み"
+    },
+    "decide": {
+      "factors": [
+        "NDOC",
+        "field"
+      ],
+      "levels": [
+        [
+          "8 (E163b 互換)",
+          "16 (今回)"
+        ],
+        [
+          "F2",
+          "Z"
+        ]
+      ],
+      "selected": "F2 / NDOC=16"
+    },
+    "act": {
+      "artifacts": [
+        "experiment-174-pseudoinverse/{Cargo.toml, src/main.rs, src/linalg.rs, run.sh, results/{f2_penrose.txt, z_pseudoinverse.txt}}",
+        "EXPERIMENTS.md: E174 詳細セクション",
+        "OODA_history.json: 本サイクル e174-c01"
+      ],
+      "scheduler_proof": "qsub bash run.sh → JOB 9, qwait → DONE(0)"
+    },
+    "next_cycle_id": "e175-c01"
+  },
+  {
+    "cycle_id": "e175-c01",
+    "task_ref": "consolidated-tren-cleanup-execute",
+    "origin_tasks": [19, 20, 21, 22, 23, 24],
+    "datetime_jst": "2026-04-25T11:00+09:00",
+    "observe": {
+      "scope": "task-classification.md で抽出した CANCELLED 残務 (#19/#20/#21/#22/#23/#24) の実行",
+      "before_state": {
+        "scheduler_dir_size_mb": 158,
+        "qsched_residue_dirs": 269,
+        "scheduler_sock": "present",
+        "scheduler_serial": "present",
+        "logs_files": 1024,
+        "scheduler_version": "0.1.0",
+        "tren_lock_race_fix": "absent",
+        "stale_doc_refs": [
+          "TOOLS_CATALOG.md TOC anchor #2-bitrag-sched",
+          "TOOLS_CATALOG.md L436 SCHEDULER_DIR=../scheduler 例 (env.sh が $TREN を export する設計と不整合)"
+        ]
+      },
+      "after_state": {
+        "scheduler_dir_size_mb": 154,
+        "qsched_residue_dirs": 0,
+        "scheduler_sock": "removed",
+        "scheduler_serial": "removed",
+        "logs_files": 0,
+        "scheduler_version": "0.2.0",
+        "tren_lock_race_fix": "present (libc::flock LOCK_EX on <cwd>/.tren.lock in ensure_workdir)",
+        "smoke_tests": "5/5 PASS (smoke_concurrent_qsub_creates_single_workdir 新設で N=6 並列 qsub → .tren-* 厳密 1 件を保証)",
+        "doc_fix": [
+          "TOC anchor を #2-tren-scheduler-旧称-bitrag-sched に修正",
+          "L429-452 env.sh セクションを TREN/TREN_HOME ベースに書換 (SCHEDULER_DIR 例を撤去)"
+        ]
+      }
+    },
+    "orient": {
+      "axiom_alignment": {
+        "no_f32_f64": "verified (新規コードは usize/u32/c_int のみ、libc::flock 戻り値も c_int)",
+        "single_source_of_truth": "artifacts/bitrag/scheduler/ 1 本に統一 (~/UTILITY/tren へのシムは廃止済を再確認)",
+        "destructive_ops_constraint": "git は触らず、純粋なファイル削除と Cargo build のみ"
+      },
+      "key_finding": "task-classification.md で『CANCELLED 5 連発 (#19/#20/#22/#23/#24)』と分類した残務は、実体としては (a) 物理掃除、(b) ドキュメント整合化、(c) v0.1→v0.2 race fix の 3 群に縮約可能。1 OODA サイクルで 6 タスク分の差分を吸収し、改良中毒/視野曖昧の連鎖を 1 commit で清算した。",
+      "regression": false,
+      "comment": "smoke_concurrent_qsub_creates_single_workdir は v0.1.0 では FAIL するはずの新リグレッションガード。今後 ensure_workdir を弄った時に race を踏み抜くと即検知できる。"
+    },
+    "decide": {
+      "factors": ["physical_cleanup", "doc_alignment", "race_fix"],
+      "selected": "3 軸を 1 サイクルに圧縮実行",
+      "next_steps": [
+        "次サイクル候補: experiment-* 配下の run.sh が今も `source ../scheduler/env.sh` で動くか smoke (Task #20 の実体確認)",
+        "scheduler/logs/ を .gitignore に追加して再増殖を防ぐ",
+        "task-classification.md の #19-#24 を『実行済 (e175-c01 で吸収)』として追記更新"
+      ]
+    },
+    "act": {
+      "artifacts": [
+        "artifacts/bitrag/scheduler/Cargo.toml: version 0.1.0 → 0.2.0",
+        "artifacts/bitrag/scheduler/src/lib.rs: ensure_workdir に CwdLock (libc::flock) を導入",
+        "artifacts/bitrag/scheduler/tests/smoke.rs: smoke_concurrent_qsub_creates_single_workdir 追加",
+        "artifacts/bitrag/scheduler/{._qsched*, scheduler.sock, scheduler.serial, logs/*}: 物理削除",
+        "artifacts/bitrag/TOOLS_CATALOG.md: TOC anchor 修正 + env.sh セクション TREN ベース書換",
+        "artifacts/bitrag/OODA_history.json: 本サイクル e175-c01"
+      ],
+      "scheduler_proof": "cargo test --release --test smoke → 5 passed; 0 failed (内 1 件は新規 race fix ガード)"
+    },
+    "next_cycle_id": "e176-c01"
+  },
+  {
+    "cycle_id": "e176-c01",
+    "task_ref": "task-26-theory-closure-v1",
+    "origin_task": 26,
+    "datetime_jst": "2026-04-25T13:00+09:00",
+    "observe": {
+      "scope": "散逸する 5 本の長文 THEORY_*/MATH_FOUNDATIONS と E166–E175 の検証結果を 1 凍結核 + 1 検証台帳に集約",
+      "before_state": {
+        "theory_docs": [
+          "THEORY_FORMALIZATION.md (655L)",
+          "THEORY_LINEAGE.md (397L)",
+          "THEORY_NAND_COMPLETENESS.md (324L)",
+          "THEORY_RUST_CODEGEN.md (296L)",
+          "MATH_FOUNDATIONS.md (655L)"
+        ],
+        "frozen_core": "absent",
+        "evidence_ledger": "absent",
+        "claim_ids_unified": false
+      },
+      "after_state": {
+        "frozen_core": "artifacts/bitrag/THEORY_CORE_v1.md (新設)",
+        "evidence_ledger": "artifacts/bitrag/THEORY_EVIDENCE_LEDGER.md (新設)",
+        "redirect_blocks_inserted": 5,
+        "claim_ids_unified": true,
+        "sha1_pre_redirect": [
+          "THEORY_FORMALIZATION.md = 839ded17d3e06a481c6ad91fd8fd0312a33fe079",
+          "THEORY_LINEAGE.md = 77296508b2711aef883c8a8a31e882141640bf7b",
+          "THEORY_NAND_COMPLETENESS.md = ec049074de58a0a569aa4f1bfa3495b0e3360cfa",
+          "THEORY_RUST_CODEGEN.md = 36300abd1ca95a6e7975ada1224f053e2f4d9c11",
+          "MATH_FOUNDATIONS.md = 31ab066ee8f54f33bb2e6cbe92fc7540ba74c90b"
+        ],
+        "sha1_pinned_at_freeze": [
+          "THEORY_FORMALIZATION.md = d495c497698f9e52d9cff05cd4f4222d54a007b9",
+          "THEORY_LINEAGE.md = 8d014ea5baaad0a851cf6ca04f7204466d0cb0de",
+          "THEORY_NAND_COMPLETENESS.md = 9d7ef12915c1589aa60001f4c1136c7af12bb32e",
+          "THEORY_RUST_CODEGEN.md = ada4a3125a5bcd2565cf050ba6f5e1b071fef7f9",
+          "MATH_FOUNDATIONS.md = decb05b27947fc49347c117225eb930f31acaee1"
+        ]
+      }
+    },
+    "orient": {
+      "axiom_alignment": {
+        "no_f32_f64": "verified (新規ドキュメント 2 本は Markdown のみ, コード変更なし)",
+        "single_source_of_truth": "THEORY_CORE_v1.md を理論層の凍結核として 1 本化",
+        "destructive_ops_constraint": "既存 5 本の本文は変更せず、各冒頭にリダイレクトブロック 4 行のみ挿入"
+      },
+      "key_finding": "理論層の散逸 (5 本 × 平均 465 行) は『新規主張なし、既存条文の採録のみ』という制約下で 1 凍結核 + 1 検証台帳の 2 ファイルに整理可能であった。§4 凍結宣言で『v1 本文不変、差し替えは v2 を新設』を明文化することで、改良中毒・視野曖昧化が理論層に再侵入する経路を構造的に閉じた。task-classification.md でいう F (改良中毒) と D (視野曖昧) の理論版予防策。",
+      "regression": false,
+      "comment": "副作用なし確認: scheduler crate の cargo build --release + smoke test 5/5 PASS を再走し、理論ドキュメント整理がコードに何の影響も及ぼさないことを自己監査済。"
+    },
+    "decide": {
+      "factors": ["frozen_core", "evidence_ledger", "redirect_blocks", "claim_id_unification"],
+      "selected": "5 章構成の凍結核 (§1 公理 / §2 主定理 / §3 不変条件 / §4 凍結宣言 / §5 SHA1) + 6 表構成の検証台帳",
+      "next_steps": [
+        "E176 以降の OODA サイクルは THEORY_EVIDENCE_LEDGER.md 表 5 末尾に追記する運用に切替",
+        "新規定理 / 新公理が必要になった時点で THEORY_CORE_v2.md を新設 (v1 は不変)",
+        "scheduler/logs/ の .gitignore 追加 (e175-c01 next_steps 残)"
+      ]
+    },
+    "act": {
+      "artifacts": [
+        "artifacts/bitrag/THEORY_CORE_v1.md (新設; INV-SCHEDULER は code review 指摘で削除)",
+        "artifacts/bitrag/THEORY_EVIDENCE_LEDGER.md (新設; review 指摘で schema 改訂: claim_text 列追加, status 3 値固定, claim_id 1:1 厳格化, A4-add/A6/A7/A8 を本表外に)",
+        "artifacts/bitrag/THEORY_FORMALIZATION.md (冒頭リダイレクトブロック挿入)",
+        "artifacts/bitrag/THEORY_LINEAGE.md (冒頭リダイレクトブロック挿入)",
+        "artifacts/bitrag/THEORY_NAND_COMPLETENESS.md (冒頭リダイレクトブロック挿入)",
+        "artifacts/bitrag/THEORY_RUST_CODEGEN.md (冒頭リダイレクトブロック挿入)",
+        "artifacts/bitrag/MATH_FOUNDATIONS.md (冒頭リダイレクトブロック挿入)",
+        "artifacts/bitrag/task-classification.md (e176-c01 実行ログ追記)",
+        "artifacts/bitrag/OODA_history.json (本サイクル e176-c01)",
+        "replit.md (ドキュメント階層 1 行追加 — review 指摘で 1 セクション 1 行に縮小)"
+      ],
+      "scheduler_proof": "cargo build --release --manifest-path artifacts/bitrag/scheduler/Cargo.toml + cargo test --release --test smoke → 5 passed; 0 failed (review 修正後にも再確認)"
+    },
+    "next_cycle_id": "e177-c01"
+  }
+]

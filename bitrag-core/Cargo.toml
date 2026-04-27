@@ -1,0 +1,26 @@
+[package]
+name = "bitrag-core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "bitrag_core"
+path = "src/lib.rs"
+
+[features]
+default = []
+# `plot-fonts` を有効化すると plotters の register_font ヘルパが使えるようになる。
+# 既存の他クレートに plotters を強制しないため、デフォルトでは無効。
+plot-fonts = ["plotters"]
+# `plot-goldcycle` を有効化すると gold_cycle::plot ヘルパが使えるようになる。
+plot-goldcycle = ["plotters"]
+
+[dependencies]
+plotters = { version = "0.3", default-features = false, optional = true, features = [
+    "bitmap_backend",
+    "bitmap_encoder",
+    "full_palette",
+    "line_series",
+    "point_series",
+    "ab_glyph",
+] }
